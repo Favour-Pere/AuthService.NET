@@ -1,3 +1,5 @@
+using AuthService.NET.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.NET
 {
@@ -10,6 +12,9 @@ namespace AuthService.NET
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            builder.Services.AddDbContext<AuthDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
@@ -24,7 +29,6 @@ namespace AuthService.NET
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
