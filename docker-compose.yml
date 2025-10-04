@@ -1,0 +1,44 @@
+﻿version: '3.9'
+
+services:
+  authservice:
+    build:
+      context: .
+      dockerfile: AuthService.NET/Dockerfile
+    container_name: authservice.api
+    depends_on:
+        - postgres
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Development
+    - ConnectionStrings__Default=Host=postgres;Port=5432;Database=authdb;Username=authuser;Password=authpassword
+    ports:
+    - "5000:8080"
+    - "5001:8081"
+    restart: always
+
+  postgres:
+    image: postgres:15
+    container_name: authservice.db
+    environment:
+        POSTGRES_DB: authdb
+        POSTGRES_USER: authuser
+        POSTGRES_PASSWORD: authpassword
+    ports:
+        - "5432:5432"
+    volumes:
+        - postgres_data:/var/lib/postgresql/data
+
+  migrations:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    container_name: authservice.migrations
+    depends_on:
+        - postgres
+    volumes:
+        - .:/src
+    working_dir: /src/AuthService.NET
+    command: > 
+        sh -c "dotnet tool restore && dotnet tool run dotnet-ef database update"
+
+
+volumes:
+    postgres_data:
