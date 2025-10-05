@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AuthService.Domain.Common;
 
 namespace AuthService.Domain.Entities
 {
-    public class User
+    public class User : BaseEntity
     {
-        public Guid Id { get; private set; } = Guid.NewGuid();
-
         public string Email { get; private set; } = string.Empty;
 
         public string PasswordHash { get; private set; } = string.Empty;
@@ -22,9 +16,7 @@ namespace AuthService.Domain.Entities
 
         public string Role { get; private set; } = "User";
 
-        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-
-        public DateTime? UpdatedAt { get; private set; }
+        public ICollection<RefreshToken>? RefreshTokens { get; private set; } = [];
 
         private User()
         { }
@@ -52,19 +44,19 @@ namespace AuthService.Domain.Entities
             {
                 AvatarUrl = avatarUrl;
             }
-            UpdatedAt = DateTime.UtcNow;
+            MarkUpdated();
         }
 
         public void ChangePassword(string newPasswordHash)
         {
             PasswordHash = newPasswordHash;
-            UpdatedAt = DateTime.UtcNow;
+            MarkUpdated();
         }
 
         public void AssignRole(string role)
         {
             Role = role;
-            UpdatedAt = DateTime.UtcNow;
+            MarkUpdated();
         }
     }
 }
