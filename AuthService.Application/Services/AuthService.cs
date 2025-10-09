@@ -1,6 +1,7 @@
 ﻿using AuthService.Application.Contracts;
 using AuthService.Application.DTOs;
 using AuthService.Domain.Entities;
+using BCrypt.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,10 +45,13 @@ namespace AuthService.Application.Services
 
             var refreshToken = _tokenService.GenerateRefreshToken(user.Id);
 
+            //TODO: Fix the verification link
             var verificationLink = $"https://example.com/verify?user={user.Id}";
             await _emailService.SendEmailVerificationAsync(user.Email, verificationLink);
             return new AuthResponse
             {
+                Email = user.Email,
+                Message = "Registration successful. Please check your email to verify your account.",
                 AccessToken = accessToken,
                 RefreshToken = refreshToken.Token,
                 ExpiresAt = refreshToken.ExpiresAt
@@ -63,13 +67,15 @@ namespace AuthService.Application.Services
                 throw new InvalidOperationException("Invalid email or password.");
             }
 
-            var accessToken = _tokenService.GenerateAccessToken(user);
+            var jwt = _tokenService.GenerateAccessToken(user);
 
             var refreshToken = _tokenService.GenerateRefreshToken(user.Id);
 
             return new AuthResponse
             {
-                AccessToken = accessToken,
+                Email = user.Email,
+                Message = "Login Successful",
+                AccessToken = jwt,
                 RefreshToken = refreshToken.Token,
                 ExpiresAt = refreshToken.ExpiresAt
             };
@@ -77,15 +83,12 @@ namespace AuthService.Application.Services
 
         private static string HashPassword(string password)
         {
-            var bytes = Encoding.UTF8.GetBytes(password);
-            var hash = SHA256.HashData(bytes);
-            return Convert.ToBase64String(hash);
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
         private static bool VerifyPassword(string password, string hash)
         {
-            var computedHash = HashPassword(password);
-            return computedHash == hash;
+            return BCrypt.Net.BCrypt.Verify(password, hash);
         }
 
         public async Task<bool> VerifyEmailAsync(string email, string token)
@@ -123,13 +126,29 @@ namespace AuthService.Application.Services
 
             token.Revoke();
 
-            await _userRepository.UpdateRefreshTokenAsync(token)
+            await _userRepository.UpdateRefreshTokenAsync(token);
 
+            return new AuthResponse
+            {
+                Email = user.Email,
+                Message = "Token refreshed successfully",
+                AccessToken = newJwt,
+                RefreshToken = newRefreshToken.Token,
+                ExpiresAt = newRefreshToken.ExpiresAt
+            };
         }
 
-        public Task<bool> RevokeRefreshTokenAsync(string refreshToken)
+        public async Task<bool> RevokeRefreshTokenAsync(string refreshToken)
         {
-            throw new NotImplementedException();
+            var token = await _userRepository.GetRefreshTokenAsync(refreshToken);
+
+            if (token is null || token.IsRevoked)
+                return false;
+
+            token.Revoke();
+            await _userRepository.UpdateRefreshTokenAsync(token);
+
+            return true;
         }
     }
 }
