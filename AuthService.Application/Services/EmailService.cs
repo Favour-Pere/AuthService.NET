@@ -8,14 +8,9 @@ using System.Threading.Tasks;
 
 namespace AuthService.Application.Services
 {
-    public class EmailService : IEmailService
+    public class EmailService(IConfiguration configuration) : IEmailService
     {
-        private readonly IConfiguration _configuration;
-
-        public EmailService(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+        private readonly IConfiguration _configuration = configuration;
 
         /// <summary>
         /// Sends an email verification message to the specified address.
