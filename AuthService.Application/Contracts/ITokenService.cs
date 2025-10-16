@@ -4,6 +4,8 @@ namespace AuthService.Application.Contracts
 {
     public interface ITokenService
     {
+        Task<RefreshToken> GetRefreshTokenAsync(string refreshToken);
+
         string GenerateAccessToken(User user);
 
         RefreshToken GenerateRefreshToken(Guid userId);

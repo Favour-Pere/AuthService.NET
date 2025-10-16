@@ -29,6 +29,7 @@ namespace AuthService.Domain.Entities
             ExpiresAt = expiresAt;
             UserId = userId;
         }
+       
 
         public void Revoke()
         {

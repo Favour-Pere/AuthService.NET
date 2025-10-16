@@ -1,4 +1,5 @@
 ﻿using AuthService.Domain.Common;
+using AuthService.Domain.Enums;
 
 namespace AuthService.Domain.Entities
 {
@@ -14,7 +15,7 @@ namespace AuthService.Domain.Entities
 
         public bool IsEmailVerified { get; private set; } = false;
 
-        public string Role { get; private set; } = "User";
+        public Role Role { get; private set; } = Role.User;
 
         public ICollection<RefreshToken>? RefreshTokens { get; private set; } = [];
 
@@ -53,7 +54,7 @@ namespace AuthService.Domain.Entities
             MarkUpdated();
         }
 
-        public void AssignRole(string role)
+        public void AssignRole(Role role)
         {
             Role = role;
             MarkUpdated();
