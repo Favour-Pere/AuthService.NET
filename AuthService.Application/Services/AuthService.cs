@@ -79,6 +79,7 @@ namespace AuthService.Application.Services
             if (user is null)
                 return false;
 
+            // TODO: Validate token properly (you’ll implement that later)
             user.VerifyEmail();
             await userRepo.UpdateAsync(user);
             await userRepo.SaveChangesAsync();
