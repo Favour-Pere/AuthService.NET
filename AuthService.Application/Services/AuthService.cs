@@ -138,5 +138,25 @@ namespace AuthService.Application.Services
         {
             return BCrypt.Net.BCrypt.Verify(password, hash);
         }
+
+        public async Task LogoutAsync(string refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return;
+
+            var tokens = await refreshTokenRepo.FindAsync(rt => rt.Token == refreshToken);
+            var tokenEntity = tokens.FirstOrDefault();
+
+            if (tokenEntity is null)
+                return;
+
+            // Prefer revoking so we keep an audit trail; if you prefer deletion, call RemoveAsync instead.
+            if (!tokenEntity.IsRevoked)
+            {
+                tokenEntity.Revoke();
+                await refreshTokenRepo.UpdateAsync(tokenEntity);
+                await refreshTokenRepo.SaveChangesAsync();
+            }
+        }
     }
 }

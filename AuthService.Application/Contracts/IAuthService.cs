@@ -13,5 +13,7 @@ namespace AuthService.Application.Contracts
         Task<AuthResponse> RefreshTokenAsync(string refreshToken);
 
         Task<bool> RevokeRefreshTokenAsync(string refreshToken);
+
+        Task LogoutAsync(string refreshToken);
     }
 }

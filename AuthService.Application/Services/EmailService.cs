@@ -91,7 +91,7 @@ namespace AuthService.Application.Services
             using var smtp = new SmtpClient();
             try
             {
-                await smtp.ConnectAsync(smtpServer, port, SecureSocketOptions.StartTls);
+                await smtp.ConnectAsync(smtpServer, port, SecureSocketOptions.SslOnConnect);
                 await smtp.AuthenticateAsync(username, password);
                 await smtp.SendAsync(message);
             }
